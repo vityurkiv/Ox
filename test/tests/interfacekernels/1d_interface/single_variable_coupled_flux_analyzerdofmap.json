@@ -1,0 +1,2 @@
+{"ndof": 11, "demangled": true, "vars": [{"name": "u", "subdomains": [{"id": 0, "kernels": [{"name": "diff0", "type": "CoeffParamDiffusion"}], "dofs": [0, 1, 2, 3, 4, 5]}, {"id": 1, "kernels": [{"name": "diff1", "type": "CoeffParamDiffusion"}], "dofs": [5, 6, 7, 8, 9, 10]}]}]}
+

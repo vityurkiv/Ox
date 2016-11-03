@@ -2,26 +2,17 @@
 ################### MOOSE Application Standard Makefile #######################
 ###############################################################################
 #
+# Required Environment variables (one of the following)
+# PACKAGES_DIR  - Location of the MOOSE redistributable package
+# CPPUNIT_DIR   - Location of CPPUNIT
+#
 # Optional Environment variables
-# MOOSE_DIR        - Root directory of the MOOSE project 
-# HERD_TRUNK_DIR   - Location of the HERD repository
-# FRAMEWORK_DIR    - Location of the MOOSE framework
+# MOOSE_DIR     - Root directory of the MOOSE project
+# FRAMEWORK_DIR - Location of the MOOSE framework
 #
 ###############################################################################
-MOOSE_DIR          ?= $(shell dirname `pwd`)/../moose
+MOOSE_DIR          ?= $(shell dirname `pwd`)
 FRAMEWORK_DIR      ?= $(MOOSE_DIR)/framework
-###############################################################################
-CURRENT_DIR        := $(shell pwd)
-
-# framework
-include $(FRAMEWORK_DIR)/build.mk
-include $(FRAMEWORK_DIR)/moose.mk
-
-################################## MODULES ####################################
-HEAT_CONDUCTION   := yes
-NAVIER_STOKES     := yes
-MISC              := yes
-include           $(MOOSE_DIR)/modules/modules.mk
 ###############################################################################
 
 # Extra stuff for CPPUNIT
@@ -29,21 +20,31 @@ CPPUNIT_DIR 		?= $(PACKAGES_DIR)/cppunit
 ADDITIONAL_INCLUDES 	:= -I$(CPPUNIT_DIR)/include
 ADDITIONAL_LIBS 	:= -L$(CPPUNIT_DIR)/lib -lcppunit
 
-# dep apps
-APPLICATION_DIR    := $(CURRENT_DIR)/..
-APPLICATION_NAME   := Ox
-include            $(FRAMEWORK_DIR)/app.mk
+# framework
+include $(FRAMEWORK_DIR)/build.mk
+include $(FRAMEWORK_DIR)/moose.mk
 
-APPLICATION_DIR    := $(CURRENT_DIR)
-APPLICATION_NAME   := Ox-unit
-BUILD_EXEC         := yes
+################################## MODULES ####################################
+SOLID_MECHANICS   := yes
+TENSOR_MECHANICS  := yes
+PHASE_FIELD       := yes
+XFEM              := yes
+POROUS_FLOW       := yes
+FLUID_PROPERTIES  := yes
+include           $(MOOSE_DIR)/modules/modules.mk
+###############################################################################
+
+APPLICATION_DIR  := $(MOOSE_DIR)/unit
+APPLICATION_NAME := moose-unit
+BUILD_EXEC       := yes
+app_BASE_DIR     :=      # Intentionally blank
 DEP_APPS    ?= $(shell $(FRAMEWORK_DIR)/scripts/find_dep_apps.py $(APPLICATION_NAME))
 include $(FRAMEWORK_DIR)/app.mk
 
-# Find all the OX unit test source files and include their dependencies.
-Ox-unit_srcfiles := $(shell find $(CURRENT_DIR) -name "*.C")
-Ox-unit_deps := $(patsubst %.C, %.$(obj-suffix).d, $(Ox-unit_srcfiles))
--include $(Ox-unit_deps)
+# Find all the MOOSE unit test source files and include their dependencies.
+moose_unit_srcfiles := $(shell find $(MOOSE_DIR)/unit -name "*.C")
+moose_unit_deps := $(patsubst %.C, %.$(obj-suffix).d, $(moose_unit_srcfiles))
+-include $(moose_unit_deps)
 
 ###############################################################################
 # Additional special case targets should be added here
