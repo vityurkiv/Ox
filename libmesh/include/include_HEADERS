@@ -19,6 +19,7 @@ noinst_HEADERS =  \
 include_HEADERS =  \
         libmesh_config.h \
         base/auto_ptr.h \
+        base/default_coupling.h \
         base/dirichlet_boundaries.h \
         base/dof_map.h \
         base/dof_object.h \
@@ -43,6 +44,7 @@ include_HEADERS =  \
         base/print_trace.h \
         base/reference_counted_object.h \
         base/reference_counter.h \
+        base/sibling_coupling.h \
         base/single_predicates.h \
         base/sparsity_pattern.h \
         base/variable.h \
@@ -316,6 +318,7 @@ include_HEADERS =  \
         reduced_basis/transient_rb_construction.h \
         reduced_basis/transient_rb_evaluation.h \
         reduced_basis/transient_rb_theta_expansion.h \
+        solution_transfer/boundary_volume_solution_transfer.h \
         solution_transfer/direct_solution_transfer.h \
         solution_transfer/dtk_adapter.h \
         solution_transfer/dtk_evaluator.h \

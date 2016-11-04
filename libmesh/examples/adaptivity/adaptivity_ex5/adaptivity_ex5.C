@@ -111,7 +111,7 @@ Number exact_value (const Point & p,
 
 // With --enable-fparser, the user can also optionally set their own
 // exact solution equations.
-FunctionBase<Number> * parsed_solution = libmesh_nullptr;
+UniquePtr<FunctionBase<Number> > parsed_solution;
 
 
 // Returns a string with 'number' formatted and placed directly
@@ -213,19 +213,59 @@ int main (int argc, char ** argv)
   const bool have_expression = false;
 #endif
   if (have_expression)
-    parsed_solution = new ParsedFunction<Number>(command_line.next(std::string()));
+    parsed_solution.reset
+      (new ParsedFunction<Number>(command_line.next(std::string())));
 
   // Skip this 2D example if libMesh was compiled as 1D-only.
   libmesh_example_requires(2 <= LIBMESH_DIM, "2D support");
 
   // Create a new mesh on the default MPI communicator.
-  // ParallelMesh doesn't yet understand periodic BCs, plus
-  // we still need some work on automatic parallel restarts
+  // ParallelMesh currently has a bug which is triggered by this
+  // example.
   SerialMesh mesh(init.comm());
 
   // Create an equation systems object.
   EquationSystems equation_systems (mesh);
   MeshRefinement mesh_refinement (mesh);
+
+  // Declare the system and its variables.
+  // Begin by creating a transient system
+  // named "Convection-Diffusion".
+  TransientLinearImplicitSystem & system =
+    equation_systems.add_system<TransientLinearImplicitSystem>
+    ("Convection-Diffusion");
+
+  // Give the system a pointer to the assembly function.
+  system.attach_assemble_function (assemble_cd);
+
+  // Creating and attaching Periodic Boundaries
+  DofMap & dof_map = system.get_dof_map();
+
+  // Create a boundary periodic with one displaced 2.0 in the x
+  // direction
+  PeriodicBoundary horz(RealVectorValue(2.0, 0., 0.));
+
+  // Connect boundary ids 3 and 1 with it
+  horz.myboundary = 3;
+  horz.pairedboundary = 1;
+
+  // Add it to the PeriodicBoundaries
+  dof_map.add_periodic_boundary(horz);
+
+  // Create a boundary periodic with one displaced 2.0 in the y
+  // direction
+  PeriodicBoundary vert(RealVectorValue(0., 2.0, 0.));
+
+  // Connect boundary ids 0 and 2 with it
+  vert.myboundary = 0;
+  vert.pairedboundary = 2;
+
+  // Add it to the PeriodicBoundaries
+  dof_map.add_periodic_boundary(vert);
+
+  // Next build or read the mesh.  We do this only *after* generating
+  // periodic boundaries; otherwise a DistributedMesh won't know to
+  // retain periodic neighbor elements.
 
   // First we process the case where we do not read in the solution
   if (!read_solution)
@@ -243,14 +283,6 @@ int main (int argc, char ** argv)
 
       // Print information about the mesh to the screen.
       mesh.print_info();
-
-
-      // Declare the system and its variables.
-      // Begin by creating a transient system
-      // named "Convection-Diffusion".
-      TransientLinearImplicitSystem & system =
-        equation_systems.add_system<TransientLinearImplicitSystem>
-        ("Convection-Diffusion");
 
       // Adds the variable "u" to "Convection-Diffusion".  "u"
       // will be approximated using first-order approximation.
@@ -271,40 +303,6 @@ int main (int argc, char ** argv)
       // Read in the solution stored in "saved_solution.xda"
       equation_systems.read("saved_solution.xdr", DECODE);
     }
-
-  // Get a reference to the system so that we can attach things to it
-  TransientLinearImplicitSystem & system =
-    equation_systems.get_system<TransientLinearImplicitSystem>
-    ("Convection-Diffusion");
-
-  // Give the system a pointer to the assembly function.
-  system.attach_assemble_function (assemble_cd);
-
-  // Creating and attaching Periodic Boundaries
-  DofMap & dof_map = system.get_dof_map();
-
-  // Create a boundary periodic with one displaced 2.0 in the x
-  // direction
-  PeriodicBoundary horz(RealVectorValue(2.0, 0., 0.));
-
-  // Connect boundary ids 3 and 1 with it
-  horz.myboundary = 3;
-  horz.pairedboundary = 1;
-
-  // Add it to the PeriodicBoundaries
-  dof_map.add_periodic_boundary(horz);
-
-
-  // Create a boundary periodic with one displaced 2.0 in the y
-  // direction
-  PeriodicBoundary vert(RealVectorValue(0., 2.0, 0.));
-
-  // Connect boundary ids 0 and 2 with it
-  vert.myboundary = 0;
-  vert.pairedboundary = 2;
-
-  // Add it to the PeriodicBoundaries
-  dof_map.add_periodic_boundary(vert);
 
   // Initialize the data structures for the equation system.
   if (!read_solution)
@@ -529,9 +527,6 @@ int main (int argc, char ** argv)
     }
 #endif // #ifndef LIBMESH_ENABLE_AMR
 
-  // We might have a parser to clean up
-  delete parsed_solution;
-
   return 0;
 }
 
@@ -553,8 +548,8 @@ void init_cd (EquationSystems & es,
   // Project initial conditions at time 0
   es.parameters.set<Real> ("time") = system.time = 0;
 
-  if (parsed_solution)
-    system.project_solution(parsed_solution, libmesh_nullptr);
+  if (parsed_solution.get())
+    system.project_solution(parsed_solution.get(), libmesh_nullptr);
   else
     system.project_solution(exact_value, libmesh_nullptr, es.parameters);
 }

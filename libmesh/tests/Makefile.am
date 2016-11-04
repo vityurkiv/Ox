@@ -12,8 +12,19 @@ unit_tests_sources = \
   driver.C \
   test_comm.h \
   base/dof_object_test.h \
+  base/default_coupling_test.C \
   base/getpot_test.C \
   base/auto_ptr_test.C \
+  fe/fe_bernstein_test.C \
+  fe/fe_clough_test.C \
+  fe/fe_hermite_test.C \
+  fe/fe_hierarchic_test.C \
+  fe/fe_l2_hierarchic_test.C \
+  fe/fe_l2_lagrange_test.C \
+  fe/fe_lagrange_test.C \
+  fe/fe_monomial_test.C \
+  fe/fe_szabab_test.C \
+  fe/fe_xyz_test.C \
   geom/node_test.C \
   geom/point_test.C \
   geom/point_test.h \
@@ -45,6 +56,9 @@ unit_tests_sources = \
   parallel/parallel_test.C \
   parallel/parallel_point_test.C \
   quadrature/quadrature_test.C \
+  solvers/time_solver_test_common.h \
+  solvers/first_order_unsteady_solver_test.C \
+  solvers/second_order_unsteady_solver_test.C \
   systems/equation_systems_test.C \
   systems/systems_test.C \
   utils/vectormap_test.C

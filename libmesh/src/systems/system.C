@@ -76,7 +76,7 @@ System::System (EquationSystems & es,
   _qoi_evaluate_object              (libmesh_nullptr),
   _qoi_evaluate_derivative_function (libmesh_nullptr),
   _qoi_evaluate_derivative_object   (libmesh_nullptr),
-  _dof_map                          (new DofMap(number_in, *this)),
+  _dof_map                          (new DofMap(number_in, es.get_mesh())),
   _equation_systems                 (es),
   _mesh                             (es.get_mesh()),
   _sys_name                         (name_in),
@@ -2030,12 +2030,12 @@ Number System::point_value(unsigned int var, const Point & p, const bool insist_
   // And every processor had better agree about which point we're
   // looking for
 #ifndef NDEBUG
-  this->comm().verify(p(0));
+  libmesh_assert(this->comm().verify(p(0)));
 #if LIBMESH_DIM > 1
-  this->comm().verify(p(1));
+  libmesh_assert(this->comm().verify(p(1)));
 #endif
 #if LIBMESH_DIM > 2
-  this->comm().verify(p(2));
+  libmesh_assert(this->comm().verify(p(2)));
 #endif
 #endif // NDEBUG
 
@@ -2054,7 +2054,7 @@ Number System::point_value(unsigned int var, const Point & p, const bool insist_
 
   Number u = 0;
 
-  if (e && e->processor_id() == this->processor_id())
+  if (e && this->get_dof_map().is_evaluable(*e, var))
     u = point_value(var, p, *e);
 
   // If I have an element containing p, then let's let everyone know
@@ -2076,8 +2076,6 @@ Number System::point_value(unsigned int var, const Point & p, const bool insist_
 
 Number System::point_value(unsigned int var, const Point & p, const Elem & e) const
 {
-  libmesh_assert_equal_to (e.processor_id(), this->processor_id());
-
   // Ensuring that the given point is really in the element is an
   // expensive assert, but as long as debugging is turned on we might
   // as well try to catch a particularly nasty potential error
@@ -2085,6 +2083,9 @@ Number System::point_value(unsigned int var, const Point & p, const Elem & e) co
 
   // Get the dof map to get the proper indices for our computation
   const DofMap & dof_map = this->get_dof_map();
+
+  // Make sure we can evaluate on this element.
+  libmesh_assert (dof_map.is_evaluable(e, var));
 
   // Need dof_indices for phi[i][j]
   std::vector<dof_id_type> dof_indices;
@@ -2141,12 +2142,12 @@ Gradient System::point_gradient(unsigned int var, const Point & p, const bool in
   // And every processor had better agree about which point we're
   // looking for
 #ifndef NDEBUG
-  this->comm().verify(p(0));
+  libmesh_assert(this->comm().verify(p(0)));
 #if LIBMESH_DIM > 1
-  this->comm().verify(p(1));
+  libmesh_assert(this->comm().verify(p(1)));
 #endif
 #if LIBMESH_DIM > 2
-  this->comm().verify(p(2));
+  libmesh_assert(this->comm().verify(p(2)));
 #endif
 #endif // NDEBUG
 
@@ -2165,7 +2166,7 @@ Gradient System::point_gradient(unsigned int var, const Point & p, const bool in
 
   Gradient grad_u;
 
-  if (e && e->processor_id() == this->processor_id())
+  if (e && this->get_dof_map().is_evaluable(*e, var))
     grad_u = point_gradient(var, p, *e);
 
   // If I have an element containing p, then let's let everyone know
@@ -2188,8 +2189,6 @@ Gradient System::point_gradient(unsigned int var, const Point & p, const bool in
 
 Gradient System::point_gradient(unsigned int var, const Point & p, const Elem & e) const
 {
-  libmesh_assert_equal_to (e.processor_id(), this->processor_id());
-
   // Ensuring that the given point is really in the element is an
   // expensive assert, but as long as debugging is turned on we might
   // as well try to catch a particularly nasty potential error
@@ -2197,6 +2196,9 @@ Gradient System::point_gradient(unsigned int var, const Point & p, const Elem & 
 
   // Get the dof map to get the proper indices for our computation
   const DofMap & dof_map = this->get_dof_map();
+
+  // Make sure we can evaluate on this element.
+  libmesh_assert (dof_map.is_evaluable(e, var));
 
   // Need dof_indices for phi[i][j]
   std::vector<dof_id_type> dof_indices;
@@ -2255,12 +2257,12 @@ Tensor System::point_hessian(unsigned int var, const Point & p, const bool insis
   // And every processor had better agree about which point we're
   // looking for
 #ifndef NDEBUG
-  this->comm().verify(p(0));
+  libmesh_assert(this->comm().verify(p(0)));
 #if LIBMESH_DIM > 1
-  this->comm().verify(p(1));
+  libmesh_assert(this->comm().verify(p(1)));
 #endif
 #if LIBMESH_DIM > 2
-  this->comm().verify(p(2));
+  libmesh_assert(this->comm().verify(p(2)));
 #endif
 #endif // NDEBUG
 
@@ -2279,7 +2281,7 @@ Tensor System::point_hessian(unsigned int var, const Point & p, const bool insis
 
   Tensor hess_u;
 
-  if (e && e->processor_id() == this->processor_id())
+  if (e && this->get_dof_map().is_evaluable(*e, var))
     hess_u = point_hessian(var, p, *e);
 
   // If I have an element containing p, then let's let everyone know
@@ -2301,8 +2303,6 @@ Tensor System::point_hessian(unsigned int var, const Point & p, const bool insis
 
 Tensor System::point_hessian(unsigned int var, const Point & p, const Elem & e) const
 {
-  libmesh_assert_equal_to (e.processor_id(), this->processor_id());
-
   // Ensuring that the given point is really in the element is an
   // expensive assert, but as long as debugging is turned on we might
   // as well try to catch a particularly nasty potential error
@@ -2310,6 +2310,9 @@ Tensor System::point_hessian(unsigned int var, const Point & p, const Elem & e) 
 
   // Get the dof map to get the proper indices for our computation
   const DofMap & dof_map = this->get_dof_map();
+
+  // Make sure we can evaluate on this element.
+  libmesh_assert (dof_map.is_evaluable(e, var));
 
   // Need dof_indices for phi[i][j]
   std::vector<dof_id_type> dof_indices;
@@ -2374,7 +2377,7 @@ Tensor System::point_hessian(unsigned int, const Point &, const Elem &) const
   return Tensor();
 }
 
-Tensor System::point_hessian(unsigned int var, const Point & p, const Elem * e) const
+Tensor System::point_hessian(unsigned int, const Point &, const Elem *) const
 {
   libmesh_error_msg("We can only accumulate a hessian with --enable-second");
 

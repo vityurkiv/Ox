@@ -303,7 +303,7 @@ public:
   bool has_topological_neighbor (const Elem * elem,
                                  const MeshBase & mesh,
                                  const PointLocatorBase & point_locator,
-                                 PeriodicBoundaries * pb) const;
+                                 const PeriodicBoundaries * pb) const;
 #endif
 
   /**
@@ -575,12 +575,17 @@ public:
    * specified (child-local) node number.
    * Except in odd cases like pyramid refinement the child will have
    * the same local structure as the parent element.
-   * same as the parent element.
    */
   virtual unsigned int is_vertex_on_child (unsigned int /*c*/,
-                                           unsigned int i) const
-  { return this->is_vertex(i); }
+                                           unsigned int n) const
+  { return this->is_vertex(n); }
 
+  /**
+   * @returns true iff this element has a vertex at the specified
+   * (child-local) node number \p n of the specified child \p c.
+   */
+  virtual bool is_vertex_on_parent(unsigned int c,
+                                   unsigned int n) const;
 
   /**
    * @returns true iff the specified (local) node number is an edge.
@@ -1128,6 +1133,19 @@ public:
   void active_family_tree_by_neighbor (std::vector<const Elem *> & family,
                                        const Elem * neighbor,
                                        const bool reset=true) const;
+
+  /**
+   * Same as the \p active_family_tree_by_neighbor() member, but the
+   * \p neighbor here may be a topological (e.g. periodic boundary
+   * condition) neighbor, not just a local neighbor.
+   */
+  void active_family_tree_by_topological_neighbor
+    (std::vector<const Elem *> & family,
+     const Elem * neighbor,
+     const MeshBase & mesh,
+     const PointLocatorBase & point_locator,
+     const PeriodicBoundaries * pb,
+     const bool reset=true) const;
 
   /**
    * Returns the value of the refinement flag for the element.

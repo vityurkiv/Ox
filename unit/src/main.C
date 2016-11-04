@@ -12,6 +12,8 @@
 /*            See COPYRIGHT for full restrictions               */
 /****************************************************************/
 
+#include "MooseUnitApp.h"
+
 //CPPUnit includes
 #include "cppunit/XmlOutputter.h"
 #include "cppunit/CompilerOutputter.h"
@@ -21,10 +23,7 @@
 //Moose includes
 #include "Moose.h"
 #include "MooseInit.h"
-
-#include "Factory.h"
 #include "AppFactory.h"
-#include "OxApp.h"
 
 #include <fstream>
 #include <string>
@@ -35,7 +34,10 @@ int main(int argc, char **argv)
 {
   MooseInit init(argc, argv);
 
-  registerApp(OxApp);
+  registerApp(MooseUnitApp);
+
+  // Set the throw_on_error variable for unit tests
+  Moose::_throw_on_error = true;
 
   CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
 
@@ -59,9 +61,9 @@ int main(int argc, char **argv)
   }
 
   bool wasSucessful = runner.run(/*testPath=*/"",
-                                 /*doWait=*/false,
-                                 /*doPrintResult=*/true,
-                                 /*doPrintProgress=*/false);
+         /*doWait=*/false,
+         /*doPrintResult=*/true,
+         /*doPrintProgress=*/false);
 
   return wasSucessful ? 0 : 1;
 }

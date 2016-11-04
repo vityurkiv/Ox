@@ -28,6 +28,7 @@
 
 // Local includes
 #include "libmesh/boundary_info.h"
+#include "libmesh/ghosting_functor.h"
 #include "libmesh/unstructured_mesh.h"
 #include "libmesh/libmesh_logging.h"
 #include "libmesh/elem.h"
@@ -576,7 +577,8 @@ void UnstructuredMesh::find_neighbors (const bool reset_remote_elements,
 
 void UnstructuredMesh::read (const std::string & name,
                              MeshData * mesh_data,
-                             bool skip_renumber_nodes_and_elements)
+                             bool skip_renumber_nodes_and_elements,
+                             bool skip_find_neighbors)
 {
   // Set the skip_renumber_nodes_and_elements flag on all processors
   // if necessary.
@@ -609,7 +611,8 @@ void UnstructuredMesh::read (const std::string & name,
     }
 
   // Done reading the mesh.  Now prepare it for use.
-  this->prepare_for_use();
+  this->prepare_for_use(/*skip_renumber (deprecated)*/ false,
+                        skip_find_neighbors);
 }
 
 
@@ -826,6 +829,16 @@ bool UnstructuredMesh::contract ()
   // FIXME: Need to understand why deleting subactive children
   // invalidates the point locator.  For now we will clear it explicitly
   this->clear_point_locator();
+
+  // Allow our GhostingFunctor objects to reinit if necessary.
+  std::set<GhostingFunctor *>::iterator        gf_it = this->ghosting_functors_begin();
+  const std::set<GhostingFunctor *>::iterator gf_end = this->ghosting_functors_end();
+  for (; gf_it != gf_end; ++gf_it)
+    {
+      GhostingFunctor *gf = *gf_it;
+      libmesh_assert(gf);
+      gf->mesh_reinit();
+    }
 
   return mesh_changed;
 }

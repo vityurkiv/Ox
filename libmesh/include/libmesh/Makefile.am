@@ -7,6 +7,7 @@ EXTRA_DIST = rebuild_makefile.sh
 
 BUILT_SOURCES = \
         auto_ptr.h \
+        default_coupling.h \
         dirichlet_boundaries.h \
         dof_map.h \
         dof_object.h \
@@ -32,6 +33,7 @@ BUILT_SOURCES = \
         print_trace.h \
         reference_counted_object.h \
         reference_counter.h \
+        sibling_coupling.h \
         single_predicates.h \
         sparsity_pattern.h \
         variable.h \
@@ -311,6 +313,7 @@ BUILT_SOURCES = \
         transient_rb_construction.h \
         transient_rb_evaluation.h \
         transient_rb_theta_expansion.h \
+        boundary_volume_solution_transfer.h \
         direct_solution_transfer.h \
         dtk_adapter.h \
         dtk_evaluator.h \
@@ -523,6 +526,9 @@ libmesh_config.h: $(top_builddir)/include/libmesh_config.h
 auto_ptr.h: $(top_srcdir)/include/base/auto_ptr.h
 	$(AM_V_GEN)rm -f $@ && $(LN_S) -f $< $@
 
+default_coupling.h: $(top_srcdir)/include/base/default_coupling.h
+	$(AM_V_GEN)rm -f $@ && $(LN_S) -f $< $@
+
 dirichlet_boundaries.h: $(top_srcdir)/include/base/dirichlet_boundaries.h
 	$(AM_V_GEN)rm -f $@ && $(LN_S) -f $< $@
 
@@ -596,6 +602,9 @@ reference_counted_object.h: $(top_srcdir)/include/base/reference_counted_object.
 	$(AM_V_GEN)rm -f $@ && $(LN_S) -f $< $@
 
 reference_counter.h: $(top_srcdir)/include/base/reference_counter.h
+	$(AM_V_GEN)rm -f $@ && $(LN_S) -f $< $@
+
+sibling_coupling.h: $(top_srcdir)/include/base/sibling_coupling.h
 	$(AM_V_GEN)rm -f $@ && $(LN_S) -f $< $@
 
 single_predicates.h: $(top_srcdir)/include/base/single_predicates.h
@@ -1433,6 +1442,9 @@ transient_rb_evaluation.h: $(top_srcdir)/include/reduced_basis/transient_rb_eval
 	$(AM_V_GEN)rm -f $@ && $(LN_S) -f $< $@
 
 transient_rb_theta_expansion.h: $(top_srcdir)/include/reduced_basis/transient_rb_theta_expansion.h
+	$(AM_V_GEN)rm -f $@ && $(LN_S) -f $< $@
+
+boundary_volume_solution_transfer.h: $(top_srcdir)/include/solution_transfer/boundary_volume_solution_transfer.h
 	$(AM_V_GEN)rm -f $@ && $(LN_S) -f $< $@
 
 direct_solution_transfer.h: $(top_srcdir)/include/solution_transfer/direct_solution_transfer.h

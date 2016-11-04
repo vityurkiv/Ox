@@ -94,20 +94,19 @@ Nemesis_IO::Nemesis_IO (MeshBase & mesh,
   ParallelObject (mesh),
 #if defined(LIBMESH_HAVE_EXODUS_API) && defined(LIBMESH_HAVE_NEMESIS_API)
   nemhelper(new Nemesis_IO_Helper(*this, false, single_precision)),
-  _timestep(1),
 #endif
+  _timestep(1),
   _verbose (false),
   _append(false)
 {
 }
 
 
+
+// Destructor.  Defined in the C file so we can be sure to get away
+// with a forward declaration of Nemesis_IO_Helper in the header file.
 Nemesis_IO::~Nemesis_IO ()
 {
-#if defined(LIBMESH_HAVE_EXODUS_API) && defined(LIBMESH_HAVE_NEMESIS_API)
-
-  delete nemhelper;
-#endif
 }
 
 
@@ -949,6 +948,17 @@ void Nemesis_IO::read (const std::string & base_filename)
 
       libMesh::out << "[" << this->processor_id() << "] "
                    << "nemhelper->num_elem_all_sidesets = " << nemhelper->num_elem_all_sidesets << std::endl;
+
+      if (nemhelper->num_side_sets > 0)
+        {
+          libMesh::out << "Sideset names are: ";
+          std::map<int, std::string>::iterator
+            it = nemhelper->id_to_ss_names.begin(),
+            end = nemhelper->id_to_ss_names.end();
+          for (; it != end; ++it)
+            libMesh::out << "(" << it->first << "," << it->second << ") ";
+          libMesh::out << std::endl;
+        }
     }
 
 #ifdef DEBUG
@@ -1063,6 +1073,16 @@ void Nemesis_IO::read (const std::string & base_filename)
     {
       libMesh::out << "[" << this->processor_id() << "] ";
       libMesh::out << "nemhelper->num_node_sets=" << nemhelper->num_node_sets << std::endl;
+      if (nemhelper->num_node_sets > 0)
+        {
+          libMesh::out << "Nodeset names are: ";
+          std::map<int, std::string>::iterator
+            it = nemhelper->id_to_ns_names.begin(),
+            end = nemhelper->id_to_ns_names.end();
+          for (; it != end; ++it)
+            libMesh::out << "(" << it->first << "," << it->second << ") ";
+          libMesh::out << std::endl;
+        }
     }
 
   //  // Debugging, what is currently in nemhelper->node_num_map anyway?

@@ -230,9 +230,11 @@ void EquationSystems::reinit ()
     dof_constraints_created = true;
   }
 
-  // FIXME: Where should the user set maintain_level_one now??
-  // Don't override previous settings, for now
+  // Don't override any user refinement settings
   MeshRefinement mesh_refine(_mesh);
+  mesh_refine.face_level_mismatch_limit() = 0; // unlimited
+  mesh_refine.overrefined_boundary_limit() = -1; // unlimited
+  mesh_refine.underrefined_boundary_limit() = -1; // unlimited
 
   // Try to coarsen the mesh, then restrict each system's vectors
   // if necessary
@@ -408,6 +410,8 @@ System & EquationSystems::add_system (const std::string & sys_type,
   // build an eigen system
   else if (sys_type == "Eigen")
     this->add_system<EigenSystem> (name);
+  else if (sys_type == "TransientEigenSystem")
+    this->add_system<TransientEigenSystem> (name);
 #endif
 
 #if defined(LIBMESH_USE_COMPLEX_NUMBERS)

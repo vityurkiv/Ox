@@ -67,6 +67,11 @@ public:
   ~TetGenMeshInterface() {}
 
   /**
+   * Method to set swithes to tetgen, allowing for different behaviours
+   */
+   void set_switches(const std::string &);
+
+  /**
    * Method invokes TetGen library to compute a Delaunay tetrahedrization
    * from the nodes point set.
    */
@@ -159,6 +164,11 @@ protected:
    */
   MeshSerializer _serializer;
 
+  /**
+   * Parameter controling the behaviour of tetgen.
+   * By default quiet.
+   */
+  std::string _switches;
 };
 
 } // namespace libMesh
